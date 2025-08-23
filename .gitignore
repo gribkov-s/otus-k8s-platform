@@ -1,5 +1,6 @@
 .terraform/
 keys/
+kubeconfig.yaml
 *.lock.hcl
 *.tfstate
 *.tfstate.backup
