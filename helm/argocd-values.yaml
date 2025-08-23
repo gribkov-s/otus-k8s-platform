@@ -1,0 +1,14 @@
+global:
+  nodeSelector:
+    node-role: infra
+  tolerations:
+    - key: "node-role"
+      operator: "Equal"
+      value: "infra"
+      effect: "NoSchedule"
+configs:
+  params:
+    server.insecure: true
+  secret:
+    ## `htpasswd -nbBC 10 "" $ARGO_PWD | tr -d ':\n' | sed 's/$2y/$2a/'`
+    argocdServerAdminPassword: "$2a$10$2hbtUQ.1MP9STA8KmSrFp.Sn.QMekPZS9B/JnvcjfCqhtr2pMOwRO"

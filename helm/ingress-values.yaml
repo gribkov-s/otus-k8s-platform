@@ -1,0 +1,19 @@
+nodeSelector:
+  node-role: infra
+tolerations:
+  - key: "node-role"
+    operator: "Equal"
+    value: "infra"
+    effect: "NoSchedule"
+defaultBackend:
+  nodeSelector:
+    node-role: infra
+  tolerations:
+    - key: "node-role"
+      operator: "Equal"
+      value: "infra"
+      effect: "NoSchedule"
+      
+service:
+  loadBalancerIP: "${ingress_ip}"
+  type: LoadBalancer
