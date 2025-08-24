@@ -135,6 +135,44 @@ resource "yandex_kubernetes_node_group" "otus_k8s_platform_infra_node_group" {
 }
 
 # 6. Группа узлов для приложений
+resource "yandex_kubernetes_node_group" "otus_k8s_platform_workload_node_group" {
+  name       = "otus-k8s-platform-workload-node-group"
+  cluster_id = yandex_kubernetes_cluster.otus_k8s_platform_cluster.id
+  version    = "1.32"
+  
+  instance_template {
+    platform_id = "standard-v3"
+    boot_disk {
+      type = "network-hdd"
+      size = 32
+    }
+    resources {
+      memory = 2
+      cores  = 2
+    }
+    container_runtime {
+      type = "containerd"
+    }
+    network_interface {
+      subnet_ids         = [yandex_vpc_subnet.otus_k8s_platform_subnet.id]
+      security_group_ids = [yandex_vpc_security_group.k8s_sg.id]
+      nat                = true
+    }
+    metadata = {
+      ssh-keys = "ubuntu:${file("./keys/ssh_node_group_key.pub")}"
+    }
+  }
+  
+  scale_policy {
+    fixed_scale {
+      size = 1
+    }
+  }
+  
+  node_labels = {
+    "node-role" = "workload"
+  }
+}
 
 # 7. IP адрес для Ingress
 resource "yandex_vpc_address" "otus_k8s_platform_ingress_ip" {
@@ -142,5 +180,15 @@ resource "yandex_vpc_address" "otus_k8s_platform_ingress_ip" {
 
   external_ipv4_address {
     zone_id = "ru-central1-a"
+  }
+}
+
+# 8. Хранилище логов
+resource "yandex_storage_bucket" "otus_k8s_platform_logs_storage" {
+  bucket = "otus-k8s-platform-logs-storage"
+
+  anonymous_access_flags {
+    read = false
+    list = false
   }
 }
