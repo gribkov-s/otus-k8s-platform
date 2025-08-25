@@ -184,8 +184,30 @@ resource "yandex_vpc_address" "otus_k8s_platform_ingress_ip" {
 }
 
 # 8. Хранилище логов
+
+# 8.1 Service account
+resource "yandex_iam_service_account" "otus_k8s_platform_logs_storage_sa" {
+  name = "otus-k8s-platform-logs-storage-sa"
+}
+
+# 8.2 Назначение роли для доступа к хранилищу
+resource "yandex_resourcemanager_folder_iam_member" "otus_k8s_platform_logs_storage_sa_role" {
+  folder_id = yandex_iam_service_account.otus_k8s_platform_logs_storage_sa.folder_id
+  role = "storage.editor"
+  member = "serviceAccount:${yandex_iam_service_account.otus_k8s_platform_logs_storage_sa.id}"
+}
+
+# 8.3 Access_key для доступа к хранилищу
+resource "yandex_iam_service_account_static_access_key" "otus_k8s_platform_logs_storage_sa_access" {
+  service_account_id = yandex_iam_service_account.otus_k8s_platform_logs_storage_sa.id
+  depends_on         = [yandex_resourcemanager_folder_iam_member.otus_k8s_platform_logs_storage_sa_role]
+}
+
+# 8.4 Storage bucket
 resource "yandex_storage_bucket" "otus_k8s_platform_logs_storage" {
   bucket = "otus-k8s-platform-logs-storage"
+  access_key = yandex_iam_service_account_static_access_key.otus_k8s_platform_logs_storage_sa_access.access_key
+  secret_key = yandex_iam_service_account_static_access_key.otus_k8s_platform_logs_storage_sa_access.secret_key
 
   anonymous_access_flags {
     read = false

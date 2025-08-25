@@ -33,6 +33,8 @@ resource "helm_release" "otus_k8s_platform_ingress_nginx" {
 }
 
 # 2. ArgoCD
+
+# 2.1 ArgoCD release
 resource "helm_release" "otus_k8s_platform_argo_cd" {
   name = "otus-k8s-platform-argo-cd"
   namespace = "argo-cd"
@@ -48,15 +50,11 @@ resource "helm_release" "otus_k8s_platform_argo_cd" {
   ]
 }
 
-# 2.1 ArgoCD ingress
+# 2.2 ArgoCD ingress
 resource "kubernetes_ingress_v1" "otus_k8s_platform_argo_cd_ingress" {
   metadata {
     name = "otus-k8s-platform-argo-cd-ingress"
 	namespace = "argo-cd"
-	# annotations = {
-      # "nginx.ingress.kubernetes.io/force-ssl-redirect" = "true"
-      # "nginx.ingress.kubernetes.io/ssl-passthrough" = "true"
-    # }
   }
   
   depends_on = [
@@ -86,4 +84,27 @@ resource "kubernetes_ingress_v1" "otus_k8s_platform_argo_cd_ingress" {
 }
 
 # http://argocd.sgribkov.158.160.49.193.nip.io
+
+# 3. Логирование
+
+# 3.1 Loki
+resource "helm_release" "otus_k8s_platform_loki" {
+  name = "loki"
+  namespace = "otus-k8s-platform-loki"
+  repository = "https://grafana.github.io/helm-charts"
+  chart = "loki"
+
+  atomic = true
+  create_namespace = true
+  
+  values = [templatefile("./helm/loki-values.yaml", {
+    bucket_name = yandex_storage_bucket.otus_k8s_platform_logs_storage.bucket
+	access_key_id = yandex_iam_service_account_static_access_key.otus_k8s_platform_logs_storage_sa_access.access_key
+	secret_access_key = yandex_iam_service_account_static_access_key.otus_k8s_platform_logs_storage_sa_access.secret_key
+  })]
+  
+  depends_on = [
+    yandex_kubernetes_node_group.otus_k8s_platform_infra_node_group
+  ]
+}
 
