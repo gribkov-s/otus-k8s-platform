@@ -58,6 +58,7 @@ resource "kubernetes_ingress_v1" "otus_k8s_platform_argo_cd_ingress" {
   }
   
   depends_on = [
+    helm_release.otus_k8s_platform_ingress_nginx,
     helm_release.otus_k8s_platform_argo_cd
   ]
 
@@ -84,13 +85,15 @@ resource "kubernetes_ingress_v1" "otus_k8s_platform_argo_cd_ingress" {
 }
 
 # http://argocd.sgribkov.158.160.49.193.nip.io
+# user: admin
+# password: otus2025$
 
 # 3. Логирование
 
 # 3.1 Loki
 resource "helm_release" "otus_k8s_platform_loki" {
-  name = "loki"
-  namespace = "otus-k8s-platform-loki"
+  name = "otus-k8s-platform-loki"
+  namespace = "loki"
   repository = "https://grafana.github.io/helm-charts"
   chart = "loki"
 
@@ -107,4 +110,70 @@ resource "helm_release" "otus_k8s_platform_loki" {
     yandex_kubernetes_node_group.otus_k8s_platform_infra_node_group
   ]
 }
+
+# 3.2 Promtail / Alloy ???
+
+# 4. Мониторинг
+
+# 4.1 Prometheus
+
+# 4.2 ???
+
+# 5. Grafana
+
+# 5.1 Grafana release
+resource "helm_release" "otus_k8s_platform_grafana" {
+  name = "otus-k8s-platform-grafana"
+  namespace = "grafana"
+  repository = "https://grafana.github.io/helm-charts"
+  chart = "grafana"
+
+  atomic = true
+  create_namespace = true
+  values = [file("./helm/grafana-values.yaml")]
+
+  depends_on = [
+	# helm_release.otus_k8s_platform_prometheus,
+	helm_release.otus_k8s_platform_loki
+  ]
+}
+
+# 5.2 Grafana ingress
+resource "kubernetes_ingress_v1" "otus_k8s_platform_grafana_ingress" {
+  metadata {
+    name = "otus-k8s-platform-grafana-ingress"
+	namespace = "grafana"
+  }
+  
+  depends_on = [
+    helm_release.otus_k8s_platform_ingress_nginx,
+    helm_release.otus_k8s_platform_grafana
+  ]
+
+  spec {
+    ingress_class_name = "nginx"
+    rule {
+      host = "grafana.sgribkov.${yandex_vpc_address.otus_k8s_platform_ingress_ip.external_ipv4_address[0].address}.nip.io"
+      http {
+        path {
+          path = "/"
+          path_type = "Prefix"
+          backend {
+            service {
+              name = "otus-k8s-platform-grafana"
+              port {
+                number = 80
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+# http://grafana.sgribkov.158.160.49.193.nip.io
+# user: admin
+# password: 9Z8dZbI30NVlBs1KonRljRJUdn28h3ct4calIfip
+
 
