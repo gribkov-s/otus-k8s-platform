@@ -111,7 +111,21 @@ resource "helm_release" "otus_k8s_platform_loki" {
   ]
 }
 
-# 3.2 Promtail / Alloy ???
+# 3.2 Promtail
+resource "helm_release" "otus_k8s_platform_promtail" {
+  name = "otus-k8s-platform-promtail"
+  namespace = "promtail"
+  repository = "https://grafana.github.io/helm-charts"
+  chart = "promtail"
+
+  atomic = true
+  create_namespace = true
+  values = [file("./helm/promtail-values.yaml")]
+
+  depends_on = [
+    helm_release.otus_k8s_platform_loki
+  ]
+}
 
 # 4. Мониторинг
 
