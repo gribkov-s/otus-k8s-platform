@@ -129,39 +129,32 @@ resource "helm_release" "otus_k8s_platform_promtail" {
 
 # 4. Мониторинг
 
-# 4.1 Prometheus
-
-# 4.2 ???
-
-# 5. Grafana
-
-# 5.1 Grafana release
-resource "helm_release" "otus_k8s_platform_grafana" {
-  name = "otus-k8s-platform-grafana"
-  namespace = "grafana"
-  repository = "https://grafana.github.io/helm-charts"
-  chart = "grafana"
+# 4.1 Prometheus stack
+resource "helm_release" "otus_k8s_platform_kube_prometheus_stack" {
+  name = "otus-k8s-platform-kube-prometheus-stack"
+  namespace = "kube-prometheus-stack"
+  repository = "https://prometheus-community.github.io/helm-charts"
+  chart = "kube-prometheus-stack"
 
   atomic = true
   create_namespace = true
-  values = [file("./helm/grafana-values.yaml")]
+  values = [file("./helm/kube-prometheus-stack-values.yaml")]
 
   depends_on = [
-	# helm_release.otus_k8s_platform_prometheus,
 	helm_release.otus_k8s_platform_loki
   ]
 }
 
-# 5.2 Grafana ingress
+# 4.2 Grafana ingress
 resource "kubernetes_ingress_v1" "otus_k8s_platform_grafana_ingress" {
   metadata {
     name = "otus-k8s-platform-grafana-ingress"
-	namespace = "grafana"
+	namespace = "kube-prometheus-stack"
   }
   
   depends_on = [
     helm_release.otus_k8s_platform_ingress_nginx,
-    helm_release.otus_k8s_platform_grafana
+    helm_release.otus_k8s_platform_kube_prometheus_stack
   ]
 
   spec {
@@ -174,7 +167,7 @@ resource "kubernetes_ingress_v1" "otus_k8s_platform_grafana_ingress" {
           path_type = "Prefix"
           backend {
             service {
-              name = "otus-k8s-platform-grafana"
+              name = "otus-k8s-platform-kube-prometheus-stack-grafana"
               port {
                 number = 80
               }
@@ -188,6 +181,5 @@ resource "kubernetes_ingress_v1" "otus_k8s_platform_grafana_ingress" {
 
 # http://grafana.sgribkov.158.160.49.193.nip.io
 # user: admin
-# password: 9Z8dZbI30NVlBs1KonRljRJUdn28h3ct4calIfip
-
+# password: prom-operator
 

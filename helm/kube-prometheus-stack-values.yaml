@@ -1,0 +1,53 @@
+crds:
+  upgradeJob:
+    tolerations:
+      - key: "node-role"
+        operator: "Equal"
+        value: "infra"
+        effect: "NoSchedule"
+        
+alertmanager:
+  alertmanagerSpec:
+    tolerations:
+      - key: "node-role"
+        operator: "Equal"
+        value: "infra"
+        effect: "NoSchedule"
+    nodeSelector:
+      node-role: infra
+
+prometheusOperator:    
+  admissionWebhooks:    
+    deployment:
+      tolerations:
+        - key: "node-role"
+          operator: "Equal"
+          value: "infra"
+          effect: "NoSchedule"
+      nodeSelector:
+        node-role: infra
+    patch:
+      tolerations:
+        - key: "node-role"
+          operator: "Equal"
+          value: "infra"
+          effect: "NoSchedule"
+      nodeSelector:
+        node-role: infra
+    
+prometheus:    
+  prometheusSpec:
+    tolerations:
+      - key: "node-role"
+        operator: "Equal"
+        value: "infra"
+        effect: "NoSchedule"
+    nodeSelector:
+      node-role: infra
+      
+grafana:
+  additionalDataSources:
+    - name: Loki
+      type: loki
+      url: http://otus-k8s-platform-loki.loki.svc.cluster.local:3100/
+      access: proxy
