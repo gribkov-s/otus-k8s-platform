@@ -8,6 +8,10 @@ terraform {
       source  = "hashicorp/helm"
       version = ">= 2.17"
     }
+	argocd = {
+      source = "argoproj-labs/argocd"
+      version = ">= 7.10.0"
+    }
   }
 }
 
@@ -25,4 +29,10 @@ provider "helm" {
 
 provider "kubernetes" {
   config_path = "${path.module}/kubeconfig.yaml"
+}
+
+provider "argocd" {
+  server_addr = "http://argocd.sgribkov.158.160.49.193.nip.io"
+  username    = "admin"
+  password    = "otus2025$"
 }
