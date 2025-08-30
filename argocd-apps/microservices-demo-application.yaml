@@ -13,10 +13,6 @@ spec:
       parameters:
       - name: opentelemetryCollector.create
         value: "true"
-      - name: opentelemetryCollector.name
-        value: opentelemetrycollector
-      - name: opentelemetryCollector.projectId
-        value: MICROSERVICES_DEMO
   destination:
     server: https://kubernetes.default.svc
     namespace: microservices-demo

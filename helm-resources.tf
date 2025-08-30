@@ -183,3 +183,81 @@ resource "kubernetes_ingress_v1" "otus_k8s_platform_grafana_ingress" {
 # user: admin
 # password: prom-operator
 
+
+# 4.3 Prometheus ingress
+resource "kubernetes_ingress_v1" "otus_k8s_platform_prometheus_ingress" {
+  metadata {
+    name = "otus-k8s-platform-prometheus-ingress"
+	namespace = "kube-prometheus-stack"
+  }
+  
+  depends_on = [
+    helm_release.otus_k8s_platform_ingress_nginx,
+    helm_release.otus_k8s_platform_kube_prometheus_stack
+  ]
+
+  spec {
+    ingress_class_name = "nginx"
+    rule {
+      host = "prometheus.sgribkov.${yandex_vpc_address.otus_k8s_platform_ingress_ip.external_ipv4_address[0].address}.nip.io"
+      http {
+        path {
+          path = "/"
+          path_type = "Prefix"
+          backend {
+            service {
+              name = "otus-k8s-platform-kube-pro-prometheus"
+              port {
+                number = 9090
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+# http://prometheus.sgribkov.158.160.49.193.nip.io
+# user: admin
+# password: prom-operator
+
+
+# 4.3 Alert manager ingress
+resource "kubernetes_ingress_v1" "otus_k8s_platform_alertmanager_ingress" {
+  metadata {
+    name = "otus-k8s-platform-alertmanager-ingress"
+	namespace = "kube-prometheus-stack"
+  }
+  
+  depends_on = [
+    helm_release.otus_k8s_platform_ingress_nginx,
+    helm_release.otus_k8s_platform_kube_prometheus_stack
+  ]
+
+  spec {
+    ingress_class_name = "nginx"
+    rule {
+      host = "alertmanager.sgribkov.${yandex_vpc_address.otus_k8s_platform_ingress_ip.external_ipv4_address[0].address}.nip.io"
+      http {
+        path {
+          path = "/"
+          path_type = "Prefix"
+          backend {
+            service {
+              name = "otus-k8s-platform-kube-pro-alertmanager"
+              port {
+                number = 9093
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+# http://alertmanager.sgribkov.158.160.49.193.nip.io
+# user: admin
+# password: prom-operator
+

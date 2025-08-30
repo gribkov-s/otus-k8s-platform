@@ -1,4 +1,0 @@
-opentelemetryCollector:
-  create: true
-  name: opentelemetrycollector
-  projectId: "MICROSERVICES_DEMO"

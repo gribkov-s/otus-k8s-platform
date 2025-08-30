@@ -29,3 +29,37 @@ resource "kubernetes_manifest" "microservices_demo_app" {
     kubernetes_manifest.microservices_demo_project
   ]
 }
+
+# 1.4 Grafana ingress
+resource "kubernetes_ingress_v1" "microservices_demo_ingress" {
+  metadata {
+    name = "microservices-demo-ingress"
+	namespace = "microservices-demo"
+  }
+  
+  depends_on = [
+    helm_release.otus_k8s_platform_ingress_nginx,
+    kubernetes_manifest.microservices_demo_app
+  ]
+
+  spec {
+    ingress_class_name = "nginx"
+    rule {
+      host = "microservices-demo.sgribkov.${yandex_vpc_address.otus_k8s_platform_ingress_ip.external_ipv4_address[0].address}.nip.io"
+      http {
+        path {
+          path = "/"
+          path_type = "Prefix"
+          backend {
+            service {
+              name = "frontend"
+              port {
+                number = 80
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
