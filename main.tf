@@ -147,8 +147,8 @@ resource "yandex_kubernetes_node_group" "otus_k8s_platform_workload_node_group" 
       size = 32
     }
     resources {
-      memory = 2
-      cores  = 2
+      memory = 4
+      cores  = 4
     }
     container_runtime {
       type = "containerd"

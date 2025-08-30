@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: microservices-demo-app
+  namespace: argo-cd
+spec:
+  project: microservices-demo-project
+  source:
+    repoURL: https://github.com/GoogleCloudPlatform/microservices-demo.git
+    targetRevision: HEAD
+    path: helm-chart
+    helm:
+      parameters:
+      - name: opentelemetryCollector.create
+        value: "true"
+      - name: opentelemetryCollector.name
+        value: opentelemetrycollector
+      - name: opentelemetryCollector.projectId
+        value: MICROSERVICES_DEMO
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: microservices-demo
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
