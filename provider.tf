@@ -8,10 +8,6 @@ terraform {
       source  = "hashicorp/helm"
       version = ">= 2.17"
     }
-	argocd = {
-      source = "argoproj-labs/argocd"
-      version = ">= 7.10.0"
-    }
   }
 }
 
